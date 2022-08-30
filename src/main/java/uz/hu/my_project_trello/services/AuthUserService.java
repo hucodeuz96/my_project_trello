@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.hu.my_project_trello.config.security.UserDetails;
 import uz.hu.my_project_trello.domains.auth.ActivationCode;
+import uz.hu.my_project_trello.domains.auth.AuthRole;
 import uz.hu.my_project_trello.domains.auth.AuthUser;
 import uz.hu.my_project_trello.dtos.JwtResponse;
 import uz.hu.my_project_trello.dtos.LoginRequest;
@@ -26,11 +27,14 @@ import uz.hu.my_project_trello.exceptions.GenericNotFoundException;
 import uz.hu.my_project_trello.exceptions.GenericRuntimeException;
 import uz.hu.my_project_trello.mappers.AuthUserMapper;
 import uz.hu.my_project_trello.repository.AuthUserRepository;
+import uz.hu.my_project_trello.repository.RoleRepository;
 import uz.hu.my_project_trello.services.auth.ActivationCodeService;
 import uz.hu.my_project_trello.services.mail.MailService;
 import uz.hu.my_project_trello.utils.jwt.TokenService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.function.Supplier;
 
 
@@ -44,6 +48,7 @@ public class AuthUserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
     private final ActivationCodeService activationCodeService;
+    private final RoleRepository roleRepository;
 
     @Value("${activation.link.base.path}")
     private String basePath;
@@ -55,13 +60,14 @@ public class AuthUserService implements UserDetailsService {
                            AuthUserMapper authUserMapper,
                            PasswordEncoder passwordEncoder,
                            MailService mailService,
+                           RoleRepository roleRepository,
                            ActivationCodeService activationCodeService) {
         this.authenticationManager = authenticationManager;
         this.authUserRepository = authUserRepository;
         this.accessTokenService = accessTokenService;
         this.refreshTokenService = refreshTokenService;
         this.authUserMapper = authUserMapper;
-
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.mailService = mailService;
         this.activationCodeService = activationCodeService;
@@ -76,12 +82,18 @@ public class AuthUserService implements UserDetailsService {
     }
 
     public JwtResponse login(LoginRequest request) {
+        Collection<AuthRole> authRoles = new ArrayList<>();
+        authRoles.add(roleRepository.save(AuthRole.builder()
+                .name("user")
+                .code("USER")
+                .build()));
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String accessToken = accessTokenService.generateToken(userDetails);
         String refreshToken = refreshTokenService.generateToken(userDetails);
         AuthUser authUser = userDetails.authUser();
         authUser.setLastLoginTime(LocalDateTime.now());
+        authUser.setRoles(authRoles);
         authUserRepository.save(authUser);
         return new JwtResponse(accessToken, refreshToken, "Bearer");
     }

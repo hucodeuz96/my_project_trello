@@ -1,7 +1,9 @@
+
 package uz.hu.my_project_trello.controller.project;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uz.hu.my_project_trello.domains.project.Board;
 import uz.hu.my_project_trello.dtos.project.AddMemberDTO;
@@ -21,7 +23,7 @@ import uz.hu.my_project_trello.services.project.BoardService;
 @RequiredArgsConstructor
 public class BoardController {
     private final BoardService boardService;
-
+    @PreAuthorize("ADMIN")
     @PostMapping("/create")
     public ResponseEntity<?> create(@RequestBody BoardCreateDTO boardCreateDTO){
         return ResponseEntity.ok().body(boardService.generate(boardCreateDTO));
@@ -48,7 +50,7 @@ public class BoardController {
     }
 
     @DeleteMapping("/hard/{id}")
-    public ResponseEntity<Boolean> hardDeleled(Long id){
+    public ResponseEntity<Boolean> hardDeleted(Long id){
         boardService.hardDelete(id);
         return ResponseEntity.ok(true);
     }

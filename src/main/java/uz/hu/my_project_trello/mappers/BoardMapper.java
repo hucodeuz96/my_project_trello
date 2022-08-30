@@ -7,7 +7,7 @@ import uz.hu.my_project_trello.dtos.project.BoardCreateDTO;
 import uz.hu.my_project_trello.dtos.project.BoardResDTO;
 import uz.hu.my_project_trello.dtos.project.BoardUpdateDTO;
 
-import java.lang.annotation.Target;
+
 
 /**
  * @author "Husniddin Ulachov"
@@ -17,8 +17,8 @@ import java.lang.annotation.Target;
 @Mapper(componentModel = "spring")
 public interface BoardMapper {
     Board fromDTO(BoardCreateDTO boardCreateDTO);
-    BoardResDTO toDTO (Board board);
+
+    BoardResDTO toDTOFrom(Board board);
     Board fromUDTO(BoardUpdateDTO boardUpdateDTO, @MappingTarget Board board);
 
-    BoardResDTO twoResDTO(BoardResDTO  boardRes,@MappingTarget BoardResDTO boardResDTO);
 }

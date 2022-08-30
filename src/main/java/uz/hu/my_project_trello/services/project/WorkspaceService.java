@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import uz.hu.my_project_trello.config.security.UserDetails;
+import uz.hu.my_project_trello.domains.auth.AuthRole;
 import uz.hu.my_project_trello.domains.auth.AuthUser;
 import uz.hu.my_project_trello.domains.project.Workspace;
 import uz.hu.my_project_trello.dtos.project.AddMemberDTO;
@@ -13,11 +14,13 @@ import uz.hu.my_project_trello.dtos.project.WorkspaceUpdateDTO;
 import uz.hu.my_project_trello.exceptions.GenericNotFoundException;
 import uz.hu.my_project_trello.mappers.WorkspaceMapper;
 import uz.hu.my_project_trello.repository.AuthUserRepository;
+import uz.hu.my_project_trello.repository.RoleRepository;
 import uz.hu.my_project_trello.repository.WorkspaceRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,6 +35,7 @@ public class WorkspaceService extends AbsProjectService<WorkspaceResDTO, Workspa
     private final WorkspaceMapper workspaceMapper;
     private final WorkspaceRepository workspaceRepository;
     private final AuthUserRepository authUserRepository;
+    private final RoleRepository roleRepository;
     public  Long getSessionId(){
         String name = SecurityContextHolder.getContext().getAuthentication().getName();
         AuthUser authUser = authUserRepository.findByUsername(name).orElseThrow(() -> new GenericNotFoundException("not Authorization", 403));
@@ -47,14 +51,20 @@ public class WorkspaceService extends AbsProjectService<WorkspaceResDTO, Workspa
         workspace.setCreatedBy(getSessionId());
         if (Objects.nonNull(workspaceCreateDTO.getUserList())){
             ArrayList<AuthUser> list = new ArrayList<>();
+            Collection<AuthRole> authRoles = new ArrayList<>();
+            authRoles.add(roleRepository.save(AuthRole.builder()
+                    .name("admin")
+                    .code("ADMIN")
+                    .build()));
             workspaceCreateDTO.getUserList().forEach(id -> {
             AuthUser authUser = authUserRepository.findById(id).orElseThrow(() -> new GenericNotFoundException("not Found", 404));
+                authRoles.addAll(authUser.getRoles());
+            authUser.setRoles(authRoles);
             list.add(authUser);
              } );
            workspace.setUser(list);
         }
-        WorkspaceResDTO workspaceResDTO = workspaceMapper.toDTO(workspaceRepository.save(workspace));
-        return workspaceResDTO;
+        return workspaceMapper.toDTO(workspaceRepository.save(workspace));
     }
 
     @Override

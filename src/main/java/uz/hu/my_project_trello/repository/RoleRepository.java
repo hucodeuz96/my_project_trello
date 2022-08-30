@@ -1,6 +1,7 @@
 package uz.hu.my_project_trello.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import uz.hu.my_project_trello.domains.auth.AuthRole;
 import uz.hu.my_project_trello.domains.auth.AuthUser;
 
@@ -14,5 +15,4 @@ import java.util.Optional;
  */
 public interface RoleRepository extends JpaRepository<AuthRole,Long> {
     List<AuthRole> findByName(String name);
-
 }

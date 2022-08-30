@@ -34,14 +34,12 @@ public class BoardService extends AbsProjectService<BoardResDTO, BoardUpdateDTO,
     private final WorkspaceRepository workspaceRepository;
     private final BoardMapper boardMapper;
     private final AuthUserRepository authUserRepository;
-    private final  Cloneable cloneable;
 
     public Long getSessionId() {
         String name = SecurityContextHolder.getContext().getAuthentication().getName();
         AuthUser authUser = authUserRepository.findByUsername(name).orElseThrow(() -> new GenericNotFoundException("not Authorization", 403));
         return authUser.getId();
     }
-
     @Override
     public BoardResDTO generate(BoardCreateDTO boardCreateDTO) {
         workspaceRepository.findById(boardCreateDTO.getWorkscapeId()).orElseThrow(() -> new GenericNotFoundException("Not found Workspace", 404));
@@ -50,12 +48,11 @@ public class BoardService extends AbsProjectService<BoardResDTO, BoardUpdateDTO,
         board.setWorkspace(workspace);
         board.setCreatedBy(getSessionId());
         Board save = boardRepository.save(board);
-        BoardResDTO boardResDTO = boardMapper.toDTO(save);
+        BoardResDTO boardResDTO = boardMapper.toDTOFrom(save);
         System.out.println(boardResDTO);
-        boardResDTO.setWorkscape(workspace.getId());
+        boardResDTO.setWorkspaceId(workspace.getId());
         return boardResDTO;
     }
-
     @Override
     public BoardResDTO edit(BoardUpdateDTO boardUpdateDTO) {
         Board board = boardRepository.findById(boardUpdateDTO.getId()).orElseThrow(() -> new GenericNotFoundException("Not found Board", 404));
@@ -64,39 +61,55 @@ public class BoardService extends AbsProjectService<BoardResDTO, BoardUpdateDTO,
             udto.setUpdatedAt(LocalDateTime.now());
             udto.setUpdatedBy(getSessionId());
             Board save = boardRepository.save(udto);
-            BoardResDTO boardResDTO = boardMapper.toDTO(save);
-
+            BoardResDTO boardResDTO = boardMapper.toDTOFrom(save);
+            BoardResDTO boardResDTO1 = setUserAndColumn(board);
+            boardResDTO.setColumnList(boardResDTO1.getColumnList());
+            boardResDTO.setMemberList(boardResDTO1.getMemberList());
+            boardResDTO.setWorkspaceId(save.getWorkspace().getId());
             return boardResDTO;
-        } else throw new GenericNotFoundException("Not found Board", 404);
+        }
+        else throw new GenericNotFoundException("Not found Board", 404);
     }
 
     @Override
     public BoardResDTO getOne(Long id) {
-        Board board = boardRepository.getOne(getSessionId(), id);
-        BoardResDTO boardResDTO = boardMapper.toDTO(board);
-        BoardResDTO boardResDTO1 = setUserAndColumn(board);
-        return boardMapper.twoResDTO(boardResDTO,boardResDTO1);
+        Board board = boardRepository.getOneBYId(getSessionId(), id);
+       if (!Objects.isNull(board)){
+           BoardResDTO boardResDTO = boardMapper.toDTOFrom(board);
+           BoardResDTO boardResDTO1 = setUserAndColumn(board);
+           boardResDTO.setColumnList(boardResDTO1.getColumnList());
+           boardResDTO.setMemberList(boardResDTO1.getMemberList());
+           boardResDTO.setWorkspaceId(board.getWorkspace().getId());
+           return boardResDTO;
+       }
+       else throw new GenericNotFoundException("You can't get this board", 403);
     }
-
-
     @Override
     public List<BoardResDTO> getAll(Long id) {
-        boardRepository.getAll(getSessionId(), id);
-        return null;
+        List<Board> all = boardRepository.getAll(getSessionId(), id);
+        if (all.size()!=0){
+            List<BoardResDTO> boardResDTOS = new ArrayList<>();
+            for (Board board : all) {
+                BoardResDTO boardResDTO = boardMapper.toDTOFrom(board);
+                BoardResDTO boardResDTO1 = setUserAndColumn(board);
+                boardResDTO.setWorkspaceId(board.getWorkspace().getId());
+                boardResDTO.setMemberList(boardResDTO1.getMemberList());
+                boardResDTO.setColumnList(boardResDTO1.getColumnList());
+                boardResDTOS.add(boardResDTO);
+            }
+            return boardResDTOS;
+        }
+        else throw new GenericNotFoundException("You aren't member or owner", 403);
     }
 
     @Override
     public void softDelete(Long id) {
-        if (!boardRepository.softDelete(getSessionId(), id)) {
-            throw new GenericNotFoundException("User can't authorize", 403);
-        }
+        boardRepository.softDelete(getSessionId(),id);
     }
 
     @Override
     public void hardDelete(Long id) {
-        if (!boardRepository.hardDelete(getSessionId(), id)) {
-            throw new GenericNotFoundException("User can't authorize", 403);
-        }
+        boardRepository.hardDelete(getSessionId(), id);
     }
 
     public void addUser(AddMemberDTO addMemberDTO) {
@@ -111,24 +124,23 @@ public class BoardService extends AbsProjectService<BoardResDTO, BoardUpdateDTO,
         boardRepository.save(board);
     }
 
-    private static BoardResDTO setUserAndColumn(Board board) {
+    private  BoardResDTO setUserAndColumn(Board board) {
         List<String> userList = new ArrayList<>();
         BoardResDTO boardResDTO = new BoardResDTO();
-        if (Objects.nonNull(board.getUser())) {
+        if (board.getUser()!=null) {
             board.getUser().forEach(authUser -> {
                 userList.add(authUser.getUsername());
             });
-            boardResDTO.setUser(userList);
+            boardResDTO.setMemberList(userList);
         }
         List<Long> columunsId = new ArrayList<>();
-        if (Objects.nonNull(board.getColumns())) {
+        if (!Objects.isNull(board.getColumns())) {
             board.getColumns().forEach(columin -> {
                 columunsId.add(columin.getId());
             });
-            boardResDTO.setColumns(columunsId);
+            boardResDTO.setColumnList(columunsId);
         }
         return boardResDTO;
-
     }
 }
 

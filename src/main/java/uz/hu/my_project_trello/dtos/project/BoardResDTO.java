@@ -18,13 +18,13 @@ import java.util.List;
 @ToString
 public class BoardResDTO {
     private String name;
-    private Long workscape;
+    private Long workspaceId;
     private String visibility;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long createdBy;
     private Long updatedBy;
     private boolean isDeleted;
-    private List<Long> columns;
-    private List<String> user;
+    private List<Long> columnList;
+    private List<String> memberList;
 }
