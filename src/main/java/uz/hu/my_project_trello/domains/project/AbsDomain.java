@@ -14,8 +14,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 @MappedSuperclass
-public abstract  class AbsDomain {
+public abstract   class AbsDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

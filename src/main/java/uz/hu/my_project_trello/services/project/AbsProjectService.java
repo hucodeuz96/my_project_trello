@@ -20,7 +20,6 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 public abstract class AbsProjectService<T,D,K,L> {
-     private  AuthUserRepository authUserRepository;
 
      public abstract T generate(K k);
      public abstract T edit(D k);

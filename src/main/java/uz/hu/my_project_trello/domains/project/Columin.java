@@ -17,7 +17,7 @@ import java.util.List;
 @Setter
 @Builder
 public class Columin extends AbsDomain {
-    @Column(nullable = false,unique = true)
+    @Column(nullable = false)
     private String name;
 
     @OneToMany(mappedBy = "columin")
