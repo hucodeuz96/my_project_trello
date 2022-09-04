@@ -1,4 +1,4 @@
-package uz.hu.my_project_trello.dtos.project;
+package uz.hu.my_project_trello.dtos.project.columin;
 
 import lombok.*;
 
@@ -16,10 +16,10 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class CardResDTO {
+public class ColuminResDTO {
     private String name;
-    private String description;
-    private Long columin;
+    private List<Long> cardIds;
+    private Long boardId;
     private LocalDateTime createdAt ;
     private LocalDateTime updatedAt;
     private Long createdBy;

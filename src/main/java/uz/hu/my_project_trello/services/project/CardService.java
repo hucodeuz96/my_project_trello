@@ -4,14 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import uz.hu.my_project_trello.domains.auth.AuthUser;
-import uz.hu.my_project_trello.domains.project.Board;
 import uz.hu.my_project_trello.domains.project.Card;
 import uz.hu.my_project_trello.domains.project.Columin;
-import uz.hu.my_project_trello.domains.project.Workspace;
 import uz.hu.my_project_trello.dtos.project.*;
+import uz.hu.my_project_trello.dtos.project.card.CardCreateDTO;
+import uz.hu.my_project_trello.dtos.project.card.CardResDTO;
+import uz.hu.my_project_trello.dtos.project.card.CardUpdateDTO;
 import uz.hu.my_project_trello.exceptions.GenericNotFoundException;
 import uz.hu.my_project_trello.mappers.CardMapper;
-import uz.hu.my_project_trello.mappers.ColuminMapper;
 import uz.hu.my_project_trello.repository.AuthUserRepository;
 import uz.hu.my_project_trello.repository.BoardRepository;
 import uz.hu.my_project_trello.repository.CardRepository;
@@ -33,28 +33,34 @@ public class CardService extends AbsProjectService<CardResDTO, CardUpdateDTO, Ca
     private final ColuminRepository columinRepository;
     private final AuthUserRepository authUserRepository;
     private final CardMapper cardMapper;
+    private final BoardRepository boardRepository;
 
-    public Long getSessionId() {
+    public AuthUser getSessionUser() {
         String name = SecurityContextHolder.getContext().getAuthentication().getName();
-        AuthUser authUser = authUserRepository.findByUsername(name).orElseThrow(() -> new GenericNotFoundException("not Authorization", 403));
-        return authUser.getId();
+        return authUserRepository.findByUsername(name).orElseThrow(() -> new GenericNotFoundException("not Authorization", 403));
     }
     @Override
     public CardResDTO generate(CardCreateDTO cardCreateDTO) {
-        Columin columin = columinRepository.findById(cardCreateDTO.getColumin()).orElseThrow(() -> new GenericNotFoundException("Not found Columin", 404));
+        Columin columin = columinRepository.findById(cardCreateDTO.getColuminId()).orElseThrow(() -> new GenericNotFoundException("Not found Columin", 404));
+        boardRepository.getOneBYId(getSessionUser().getId(),columin.getBoard().getId()).orElseThrow(() -> new GenericNotFoundException("Server refused you to visit board",403));
         Card card = new Card();
         card.setName(cardCreateDTO.getName());
         card.setColumin(columin);
-        card.setCreatedBy(getSessionId());
+        card.setCreatedBy(getSessionUser().getId());
+        card.setUser(List.of(getSessionUser()));
         Card save = cardRepository.save(card);
-        return cardMapper.fromCard(save);
+        CardResDTO cardResDTO = cardMapper.fromCard(save);
+        cardResDTO.setColuminId(columin.getId());
+        return cardResDTO;
     }
     @Override
     public CardResDTO edit(CardUpdateDTO cardUpdateDTO) {
-        Card card = cardRepository.findById(cardUpdateDTO.getId()).orElseThrow(() -> new GenericNotFoundException("not found crad", 404));
+        Columin columin = columinRepository.findById(cardUpdateDTO.getColuminId()).orElseThrow(() -> new GenericNotFoundException("Not found Columin", 404));
+        boardRepository.getOneBYId(getSessionUser().getId(),columin.getBoard().getId()).orElseThrow(() -> new GenericNotFoundException("Server refused you to visit board",403));
+        Card card = cardRepository.getOneByID(cardUpdateDTO.getId(),getSessionUser().getId()).orElseThrow(() -> new GenericNotFoundException("not found card", 404));
         card.setName(cardUpdateDTO.getName());
         card.setDescription(cardUpdateDTO.getDescription());
-        card.setUpdatedBy(getSessionId());
+        card.setUpdatedBy(getSessionUser().getId());
         card.setUpdatedAt(LocalDateTime.now());
         Card save = cardRepository.save(card);
         return cardMapper.fromCard(save);
@@ -62,14 +68,18 @@ public class CardService extends AbsProjectService<CardResDTO, CardUpdateDTO, Ca
 
     @Override
     public CardResDTO getOne(Long id) {
-        Card card = cardRepository.findById(id).orElseThrow(() -> new GenericNotFoundException("not found crad", 404));
+        Columin columin = columinRepository.findById(id).orElseThrow(() -> new GenericNotFoundException("Not found Columin", 404));
+        boardRepository.getOneBYId(getSessionUser().getId(),columin.getBoard().getId()).orElseThrow(() -> new GenericNotFoundException("Server refused you to visit board",403));
+        Card card = cardRepository.getOneByID(id,getSessionUser().getId()).orElseThrow(() -> new GenericNotFoundException("not found crad", 404));
         return cardMapper.fromCard(card);
     }
 
     @Override
     public List<CardResDTO> getAll(Long id) {
+        Columin columin = columinRepository.findById(id).orElseThrow(() -> new GenericNotFoundException("Not found Columin", 404));
+        boardRepository.getOneBYId(getSessionUser().getId(),columin.getBoard().getId()).orElseThrow(() -> new GenericNotFoundException("Server refused you to visit board",403));
         List<CardResDTO> cardResDTOS = new ArrayList<>();
-        for (Card card : cardRepository.getAllBYID(id)) {
+        for (Card card : cardRepository.getAllByColumnId(id)) {
             CardResDTO cardResDTO = cardMapper.fromCard(card);
             cardResDTOS.add(cardResDTO);
         }
@@ -78,7 +88,7 @@ public class CardService extends AbsProjectService<CardResDTO, CardUpdateDTO, Ca
 
     @Override
     public void softDelete(Long id) {
-        cardRepository.softDelete(id);
+        cardRepository.softDeleteByCardId(id);
     }
 
     @Override
@@ -87,11 +97,10 @@ public class CardService extends AbsProjectService<CardResDTO, CardUpdateDTO, Ca
     }
 
     public void addUser(AddMemberDTO addMemberDTO) {
+        Card card = cardRepository.getOneByID(addMemberDTO.getSpaceId(),getSessionUser().getId()).orElseThrow(() -> new GenericNotFoundException("Not found Card", 404));
+        boardRepository.getOneBYId(getSessionUser().getId(),card.getColumin().getBoard().getId()).orElseThrow(() -> new GenericNotFoundException("Server refused you to visit board",403));
         List<AuthUser> users = new ArrayList<>();
         Card found = cardRepository.findById(addMemberDTO.getSpaceId()).orElseThrow(() -> new GenericNotFoundException("Not found", 404));
-        if (!found.getCreatedBy().equals(getSessionId())){
-            throw new GenericNotFoundException("you aren't owner this workspace",403);
-        }
         addMemberDTO.getUserList().forEach(id -> {
             AuthUser authUser = authUserRepository.findById(id).orElseThrow(() -> new GenericNotFoundException("Member not found", 404));
             users.add(authUser);
@@ -99,6 +108,11 @@ public class CardService extends AbsProjectService<CardResDTO, CardUpdateDTO, Ca
         users.addAll(found.getUser());
         found.setUser(users);
         cardRepository.save(found);
+    }
+
+    public List<AuthUser> getUserBYCardId(Long id){
+        Card card = cardRepository.findById(id).orElseThrow(() -> new GenericNotFoundException("Not Found card", 404));
+        return card.getUser();
     }
 
 }

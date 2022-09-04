@@ -24,7 +24,7 @@ public class AuthRoleService {
     private final AuthRoleMapper authRoleMapper;
 
 
-    @PreAuthorize("hasAuthority(T(uz.jl.springbootfeatures.enums.Permissions).ROLE_READ)")
+    @PreAuthorize("hasAuthority(T(uz.hu.my_project_trello.enums.Permissions).ROLE_READ)")
     public List<AuthRoleDTO> getAll() {
         List<AuthRole> authRoles = authRoleRepository.findAll();
         return authRoleMapper.toDTO(authRoles);

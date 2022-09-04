@@ -22,8 +22,9 @@ public class Commit extends AbsDomain {
     private String text;
 
     @ManyToOne
-    private AuthUser user;
+    private AuthUser authUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Card card;
+
 }

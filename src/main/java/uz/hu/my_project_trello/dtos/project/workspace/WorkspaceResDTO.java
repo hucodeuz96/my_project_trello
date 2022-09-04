@@ -1,9 +1,9 @@
-package uz.hu.my_project_trello.dtos.project;
+package uz.hu.my_project_trello.dtos.project.workspace;
 
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.HashSet;
 
 /**
  * @author "Husniddin Ulachov"
@@ -15,16 +15,11 @@ import java.util.List;
 @Builder
 @Getter
 @Setter
-@ToString
-public class BoardResDTO {
+public class WorkspaceResDTO {
     private String name;
-    private Long workspaceId;
+    private String workspaceType;
+    private String description;
     private String visibility;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
     private Long createdBy;
-    private Long updatedBy;
-    private boolean isDeleted;
-    private List<Long> columnList;
-    private List<String> memberList;
 }

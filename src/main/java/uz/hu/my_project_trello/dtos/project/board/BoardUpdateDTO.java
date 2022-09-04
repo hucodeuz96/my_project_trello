@@ -1,4 +1,4 @@
-package uz.hu.my_project_trello.dtos.project;
+package uz.hu.my_project_trello.dtos.project.board;
 
 import lombok.*;
 
@@ -12,7 +12,10 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
-public class CardCreateDTO {
+public class BoardUpdateDTO {
+    private Long id;
     private String name;
-    private Long columin;
+    private Long workscapeId;
+    private String visibility;
+
 }

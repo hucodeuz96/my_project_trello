@@ -2,7 +2,7 @@ package uz.hu.my_project_trello.mappers;
 
 import org.mapstruct.Mapper;
 import uz.hu.my_project_trello.domains.project.Card;
-import uz.hu.my_project_trello.dtos.project.CardResDTO;
+import uz.hu.my_project_trello.dtos.project.card.CardResDTO;
 
 /**
  * @author "Husniddin Ulachov"

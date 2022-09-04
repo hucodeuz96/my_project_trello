@@ -7,9 +7,9 @@ import uz.hu.my_project_trello.domains.auth.AuthUser;
 import uz.hu.my_project_trello.domains.project.Board;
 import uz.hu.my_project_trello.domains.project.Workspace;
 import uz.hu.my_project_trello.dtos.project.AddMemberDTO;
-import uz.hu.my_project_trello.dtos.project.BoardCreateDTO;
-import uz.hu.my_project_trello.dtos.project.BoardResDTO;
-import uz.hu.my_project_trello.dtos.project.BoardUpdateDTO;
+import uz.hu.my_project_trello.dtos.project.board.BoardCreateDTO;
+import uz.hu.my_project_trello.dtos.project.board.BoardResDTO;
+import uz.hu.my_project_trello.dtos.project.board.BoardUpdateDTO;
 import uz.hu.my_project_trello.exceptions.GenericNotFoundException;
 import uz.hu.my_project_trello.mappers.BoardMapper;
 import uz.hu.my_project_trello.repository.AuthUserRepository;
@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author "Husniddin Ulachov"
@@ -42,16 +43,20 @@ public class BoardService extends AbsProjectService<BoardResDTO, BoardUpdateDTO,
     }
     @Override
     public BoardResDTO generate(BoardCreateDTO boardCreateDTO) {
-        workspaceRepository.findById(boardCreateDTO.getWorkscapeId()).orElseThrow(() -> new GenericNotFoundException("Not found Workspace", 404));
-        Board board = boardMapper.fromDTO(boardCreateDTO);
         Workspace workspace = workspaceRepository.findById(boardCreateDTO.getWorkscapeId()).orElseThrow(() -> new GenericNotFoundException("Not found Workspace", 404));
-        board.setWorkspace(workspace);
-        board.setCreatedBy(getSessionId());
-        Board save = boardRepository.save(board);
-        BoardResDTO boardResDTO = boardMapper.toDTOFrom(save);
-        System.out.println(boardResDTO);
-        boardResDTO.setWorkspaceId(workspace.getId());
-        return boardResDTO;
+        if (Objects.equals(workspace.getCreatedBy(), getSessionId())){
+            Board board = boardMapper.fromDTO(boardCreateDTO);
+            board.setWorkspace(workspace);
+            board.setCreatedBy(getSessionId());
+            AuthUser authUser = authUserRepository.findById(getSessionId()).orElseThrow(() -> new GenericNotFoundException("Not Found", 404));
+            board.setUser(List.of(authUser));
+            Board save = boardRepository.save(board);
+            BoardResDTO boardResDTO = boardMapper.toDTOFrom(save);
+            boardResDTO.setWorkspaceId(workspace.getId());
+            return boardResDTO;
+        }
+        else throw new GenericNotFoundException("Server refuses you to authorize",403);
+
     }
     @Override
     public BoardResDTO edit(BoardUpdateDTO boardUpdateDTO) {
@@ -73,20 +78,17 @@ public class BoardService extends AbsProjectService<BoardResDTO, BoardUpdateDTO,
 
     @Override
     public BoardResDTO getOne(Long id) {
-        Board board = boardRepository.getOneBYId(getSessionId(), id);
-       if (!Objects.isNull(board)){
-           BoardResDTO boardResDTO = boardMapper.toDTOFrom(board);
-           BoardResDTO boardResDTO1 = setUserAndColumn(board);
-           boardResDTO.setColumnList(boardResDTO1.getColumnList());
-           boardResDTO.setMemberList(boardResDTO1.getMemberList());
-           boardResDTO.setWorkspaceId(board.getWorkspace().getId());
-           return boardResDTO;
-       }
-       else throw new GenericNotFoundException("You can't get this board", 403);
+        Board board = boardRepository.getOneBYId(getSessionId(), id).orElseThrow(() -> new GenericNotFoundException("Server refused to visit board", 403));
+        BoardResDTO boardResDTO = boardMapper.toDTOFrom(board);
+        BoardResDTO boardResDTO1 = setUserAndColumn(board);
+        boardResDTO.setColumnList(boardResDTO1.getColumnList());
+        boardResDTO.setMemberList(boardResDTO1.getMemberList());
+        boardResDTO.setWorkspaceId(board.getWorkspace().getId());
+        return boardResDTO;
     }
     @Override
     public List<BoardResDTO> getAll(Long id) {
-        List<Board> all = boardRepository.getAll(getSessionId(), id);
+        List<Board> all = boardRepository.getAllByWorkspaceId(getSessionId(), id);
         if (all.size()!=0){
             List<BoardResDTO> boardResDTOS = new ArrayList<>();
             for (Board board : all) {
@@ -104,12 +106,12 @@ public class BoardService extends AbsProjectService<BoardResDTO, BoardUpdateDTO,
 
     @Override
     public void softDelete(Long id) {
-        boardRepository.softDelete(getSessionId(),id);
+        boardRepository.softDeleteBoardId(getSessionId(),id);
     }
 
     @Override
     public void hardDelete(Long id) {
-        boardRepository.hardDelete(getSessionId(), id);
+        boardRepository.hardDeleteBoardId(getSessionId(), id);
     }
 
     public void addUser(AddMemberDTO addMemberDTO) {
@@ -125,13 +127,9 @@ public class BoardService extends AbsProjectService<BoardResDTO, BoardUpdateDTO,
     }
 
     private  BoardResDTO setUserAndColumn(Board board) {
-        List<String> userList = new ArrayList<>();
         BoardResDTO boardResDTO = new BoardResDTO();
         if (board.getUser()!=null) {
-            board.getUser().forEach(authUser -> {
-                userList.add(authUser.getUsername());
-            });
-            boardResDTO.setMemberList(userList);
+            boardResDTO.setMemberList(board.getUser().stream().map(AuthUser::getId).collect(Collectors.toList()));
         }
         List<Long> columunsId = new ArrayList<>();
         if (!Objects.isNull(board.getColumns())) {
@@ -141,6 +139,10 @@ public class BoardService extends AbsProjectService<BoardResDTO, BoardUpdateDTO,
             boardResDTO.setColumnList(columunsId);
         }
         return boardResDTO;
+    }
+    public   List<AuthUser> getUserBYBoardId(Long id){
+        Board board = boardRepository.getOneBYId(getSessionId(), id).orElseThrow(() -> new GenericNotFoundException("You aren't board member", 403));
+        return board.getUser();
     }
 }
 

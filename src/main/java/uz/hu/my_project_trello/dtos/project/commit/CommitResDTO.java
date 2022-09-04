@@ -1,9 +1,10 @@
-package uz.hu.my_project_trello.dtos.project;
+package uz.hu.my_project_trello.dtos.project.commit;
 
 import lombok.*;
+import uz.hu.my_project_trello.domains.project.Commit;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.HashMap;
 
 /**
  * @author "Husniddin Ulachov"
@@ -16,11 +17,11 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class ColuminResDTO {
-    private String name;
-    private List<Long> card;
-    private Long board;
-    private LocalDateTime createdAt ;
+public class CommitResDTO {
+    private String text;
+    private Long userId;
+    private Long cardId;
+    private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long createdBy;
     private Long updatedBy;

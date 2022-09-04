@@ -5,9 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import uz.hu.my_project_trello.dtos.project.*;
+import uz.hu.my_project_trello.dtos.project.columin.ColuminCreateDTO;
+import uz.hu.my_project_trello.dtos.project.columin.ColuminResDTO;
+import uz.hu.my_project_trello.dtos.project.columin.ColuminUpdateDTO;
 import uz.hu.my_project_trello.response.ApiResponse;
-import uz.hu.my_project_trello.services.project.BoardService;
 import uz.hu.my_project_trello.services.project.ColuminService;
 
 /**
@@ -20,13 +21,12 @@ import uz.hu.my_project_trello.services.project.ColuminService;
 @RequiredArgsConstructor
 public class ColuminController {
     private final ColuminService columinService;
-    @PreAuthorize("ADMIN")
     @PostMapping("/create")
     public ResponseEntity<?> create(@RequestBody ColuminCreateDTO columinCreateDTO){
         return ResponseEntity.ok().body(columinService.generate(columinCreateDTO));
     }
     @PutMapping("/edit/{id}")
-    public ResponseEntity<?> edit( @RequestBody ColuminUpdateDTO  columinUpdateDTO){
+    public ResponseEntity<?> edit( @RequestBody ColuminUpdateDTO columinUpdateDTO){
         return ResponseEntity.ok().body(columinService.edit(columinUpdateDTO));
     }
 

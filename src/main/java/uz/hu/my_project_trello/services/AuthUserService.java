@@ -17,10 +17,10 @@ import uz.hu.my_project_trello.config.security.UserDetails;
 import uz.hu.my_project_trello.domains.auth.ActivationCode;
 import uz.hu.my_project_trello.domains.auth.AuthRole;
 import uz.hu.my_project_trello.domains.auth.AuthUser;
-import uz.hu.my_project_trello.dtos.JwtResponse;
-import uz.hu.my_project_trello.dtos.LoginRequest;
-import uz.hu.my_project_trello.dtos.RefreshTokenRequest;
-import uz.hu.my_project_trello.dtos.UserRegisterDTO;
+import uz.hu.my_project_trello.dtos.jwt.JwtResponse;
+import uz.hu.my_project_trello.dtos.jwt.LoginRequest;
+import uz.hu.my_project_trello.dtos.jwt.RefreshTokenRequest;
+import uz.hu.my_project_trello.dtos.jwt.UserRegisterDTO;
 import uz.hu.my_project_trello.dtos.auth.AuthUserDTO;
 import uz.hu.my_project_trello.exceptions.GenericInvalidTokenException;
 import uz.hu.my_project_trello.exceptions.GenericNotFoundException;
@@ -82,18 +82,12 @@ public class AuthUserService implements UserDetailsService {
     }
 
     public JwtResponse login(LoginRequest request) {
-        Collection<AuthRole> authRoles = new ArrayList<>();
-        authRoles.add(roleRepository.save(AuthRole.builder()
-                .name("user")
-                .code("USER")
-                .build()));
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String accessToken = accessTokenService.generateToken(userDetails);
         String refreshToken = refreshTokenService.generateToken(userDetails);
         AuthUser authUser = userDetails.authUser();
         authUser.setLastLoginTime(LocalDateTime.now());
-        authUser.setRoles(authRoles);
         authUserRepository.save(authUser);
         return new JwtResponse(accessToken, refreshToken, "Bearer");
     }
@@ -118,7 +112,7 @@ public class AuthUserService implements UserDetailsService {
         AuthUserDTO authUserDTO = authUserMapper.toDTO(authUser);
         ActivationCode activationCode = activationCodeService.generateCode(authUserDTO);
         String link = basePath.formatted(activationCode.getActivationLink());
-        mailService.sendEmail(authUserDTO, link);
+//        mailService.sendEmail(authUserDTO, link);
         return authUser;
     }
 

@@ -1,4 +1,4 @@
-package uz.hu.my_project_trello.dtos.project;
+package uz.hu.my_project_trello.dtos.project.commit;
 
 import lombok.*;
 
@@ -12,8 +12,7 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
-public class CardUpdateDTO {
+public class CommitUpdateDTO {
     private Long id;
-    private String name;
-    private String description;
+    private String text;
 }

@@ -2,7 +2,7 @@ package uz.hu.my_project_trello.mappers;
 
 import org.mapstruct.Mapper;
 import uz.hu.my_project_trello.domains.project.Columin;
-import uz.hu.my_project_trello.dtos.project.ColuminResDTO;
+import uz.hu.my_project_trello.dtos.project.columin.ColuminResDTO;
 
 /**
  * @author "Husniddin Ulachov"
@@ -11,5 +11,5 @@ import uz.hu.my_project_trello.dtos.project.ColuminResDTO;
  */
 @Mapper(componentModel = "spring")
 public interface ColuminMapper {
-    ColuminResDTO from(Columin columin);
+    ColuminResDTO fromColumin(Columin columin);
 }

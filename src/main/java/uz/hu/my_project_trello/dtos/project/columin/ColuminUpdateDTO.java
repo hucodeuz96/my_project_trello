@@ -1,7 +1,8 @@
-package uz.hu.my_project_trello.dtos.project;
+package uz.hu.my_project_trello.dtos.project.columin;
 
 import lombok.*;
-import uz.hu.my_project_trello.domains.project.Workspace;
+
+import java.util.List;
 
 /**
  * @author "Husniddin Ulachov"
@@ -13,8 +14,8 @@ import uz.hu.my_project_trello.domains.project.Workspace;
 @Builder
 @Getter
 @Setter
-public class BoardCreateDTO {
+public class ColuminUpdateDTO {
+    private Long id;
     private String name;
-    private Long workscapeId;
-    private String visibility;
+    private Long boardId;
 }

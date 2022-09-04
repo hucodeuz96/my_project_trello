@@ -3,10 +3,10 @@ package uz.hu.my_project_trello.controller.auth;
 import org.springframework.web.bind.annotation.*;
 import uz.hu.my_project_trello.controller.ApiController;
 import uz.hu.my_project_trello.domains.auth.AuthUser;
-import uz.hu.my_project_trello.dtos.JwtResponse;
-import uz.hu.my_project_trello.dtos.LoginRequest;
-import uz.hu.my_project_trello.dtos.RefreshTokenRequest;
-import uz.hu.my_project_trello.dtos.UserRegisterDTO;
+import uz.hu.my_project_trello.dtos.jwt.JwtResponse;
+import uz.hu.my_project_trello.dtos.jwt.LoginRequest;
+import uz.hu.my_project_trello.dtos.jwt.RefreshTokenRequest;
+import uz.hu.my_project_trello.dtos.jwt.UserRegisterDTO;
 import uz.hu.my_project_trello.response.ApiResponse;
 import uz.hu.my_project_trello.services.AuthUserService;
 

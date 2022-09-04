@@ -16,8 +16,7 @@ import java.util.List;
  * @project my_project_trello
  */
 
-@AllArgsConstructor
-@NoArgsConstructor
+
 @Getter
 public abstract class AbsProjectService<T,D,K,L> {
 

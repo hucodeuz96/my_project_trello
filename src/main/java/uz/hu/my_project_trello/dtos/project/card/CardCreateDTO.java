@@ -1,8 +1,6 @@
-package uz.hu.my_project_trello.dtos.project;
+package uz.hu.my_project_trello.dtos.project.card;
 
 import lombok.*;
-
-import java.util.List;
 
 /**
  * @author "Husniddin Ulachov"
@@ -14,7 +12,7 @@ import java.util.List;
 @Builder
 @Getter
 @Setter
-public class ColuminCreateDTO {
+public class CardCreateDTO {
     private String name;
-    private Long board;
+    private Long columinId;
 }

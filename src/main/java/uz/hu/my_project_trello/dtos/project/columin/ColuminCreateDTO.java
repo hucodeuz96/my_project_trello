@@ -1,4 +1,4 @@
-package uz.hu.my_project_trello.dtos.project;
+package uz.hu.my_project_trello.dtos.project.columin;
 
 import lombok.*;
 
@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 @Getter
 @Setter
-public class ColuminUpdateDTO {
-    private Long id;
+public class ColuminCreateDTO {
     private String name;
+    private Long board;
 }

@@ -1,6 +1,7 @@
-package uz.hu.my_project_trello.dtos.project;
+package uz.hu.my_project_trello.dtos.project.board;
 
 import lombok.*;
+import uz.hu.my_project_trello.domains.project.Workspace;
 
 /**
  * @author "Husniddin Ulachov"
@@ -12,10 +13,8 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
-public class BoardUpdateDTO {
-    private Long id;
+public class BoardCreateDTO {
     private String name;
     private Long workscapeId;
     private String visibility;
-
 }

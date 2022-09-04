@@ -2,14 +2,13 @@ package uz.hu.my_project_trello.controller.project;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import uz.hu.my_project_trello.config.security.UserDetails;
 import uz.hu.my_project_trello.dtos.project.AddMemberDTO;
-import uz.hu.my_project_trello.dtos.project.WorkspaceResDTO;
-import uz.hu.my_project_trello.dtos.project.WorkspaceUpdateDTO;
-import uz.hu.my_project_trello.dtos.project.WorkspaceCreateDTO;
+import uz.hu.my_project_trello.dtos.project.workspace.WorkspaceResDTO;
+import uz.hu.my_project_trello.dtos.project.workspace.WorkspaceUpdateDTO;
+import uz.hu.my_project_trello.dtos.project.workspace.WorkspaceCreateDTO;
 import uz.hu.my_project_trello.response.ApiResponse;
 import uz.hu.my_project_trello.services.project.WorkspaceService;
 
@@ -34,14 +33,18 @@ public class WorkspaceController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<?> getAll(Long id){
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return ResponseEntity.ok().body(workspaceService.getAll(id));
+    public ResponseEntity<?> getAll(){
+
+        return ResponseEntity.ok().body(workspaceService.getAll(null));
     }
 
     @GetMapping("/{id}")
     public ApiResponse<WorkspaceResDTO> getOne(@PathVariable("id") Long id){
         return new ApiResponse<>(workspaceService.getOne(id));
+    }
+    @GetMapping("/getBoardMember")
+    public ResponseEntity<?> getBoardMember(){
+        return ResponseEntity.ok(workspaceService.getByBoardMemberId());
     }
 
     @DeleteMapping("/soft/{id}")

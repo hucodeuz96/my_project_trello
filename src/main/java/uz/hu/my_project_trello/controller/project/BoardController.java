@@ -5,13 +5,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import uz.hu.my_project_trello.domains.project.Board;
 import uz.hu.my_project_trello.dtos.project.AddMemberDTO;
-import uz.hu.my_project_trello.dtos.project.BoardCreateDTO;
-import uz.hu.my_project_trello.dtos.project.BoardResDTO;
-import uz.hu.my_project_trello.dtos.project.BoardUpdateDTO;
+import uz.hu.my_project_trello.dtos.project.board.BoardCreateDTO;
+import uz.hu.my_project_trello.dtos.project.board.BoardResDTO;
+import uz.hu.my_project_trello.dtos.project.board.BoardUpdateDTO;
 import uz.hu.my_project_trello.response.ApiResponse;
 import uz.hu.my_project_trello.services.project.BoardService;
+
+import java.util.Objects;
 
 /**
  * @author "Husniddin Ulachov"
@@ -23,7 +24,6 @@ import uz.hu.my_project_trello.services.project.BoardService;
 @RequiredArgsConstructor
 public class BoardController {
     private final BoardService boardService;
-    @PreAuthorize("ADMIN")
     @PostMapping("/create")
     public ResponseEntity<?> create(@RequestBody BoardCreateDTO boardCreateDTO){
         return ResponseEntity.ok().body(boardService.generate(boardCreateDTO));
@@ -59,6 +59,11 @@ public class BoardController {
         boardService.addUser(addMemberDTO);
       return ResponseEntity.ok(true);
     }
+    @GetMapping("/getMember")
+    public ResponseEntity<?> getCardMember(@RequestParam Long boardId){
+        return ResponseEntity.status(Objects.nonNull(boardService.getUserBYBoardId(boardId))?200:409).body(boardService.getUserBYBoardId(boardId));
+    }
+
 
 
 

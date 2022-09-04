@@ -35,7 +35,7 @@ public class AuthUser {
     @Builder.Default
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Status status = Status.NOT_ACTIVE;
+    private Status status = Status.ACTIVE;
 
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)

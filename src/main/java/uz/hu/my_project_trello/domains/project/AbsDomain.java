@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
-@Builder
 @MappedSuperclass
 public abstract   class AbsDomain {
     @Id
@@ -28,4 +27,5 @@ public abstract   class AbsDomain {
     private Long updatedBy;
 
     private boolean isDeleted = false;
+
 }
