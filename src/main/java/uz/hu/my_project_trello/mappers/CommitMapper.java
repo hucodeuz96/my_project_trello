@@ -1,8 +1,8 @@
 package uz.hu.my_project_trello.mappers;
 
 import org.mapstruct.Mapper;
-import uz.hu.my_project_trello.domains.project.Commit;
-import uz.hu.my_project_trello.dtos.project.commit.CommitResDTO;
+import uz.hu.my_project_trello.domains.project.Comment;
+import uz.hu.my_project_trello.dtos.project.comment.CommentResDTO;
 
 /**
  * @author "Husniddin Ulachov"
@@ -12,5 +12,5 @@ import uz.hu.my_project_trello.dtos.project.commit.CommitResDTO;
 @Mapper(componentModel = "spring")
 public interface CommitMapper {
 
-    CommitResDTO fromCommit(Commit commit);
+    CommentResDTO fromCommit(Comment comment);
 }

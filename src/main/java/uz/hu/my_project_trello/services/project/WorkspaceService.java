@@ -21,6 +21,7 @@ import uz.hu.my_project_trello.repository.AuthUserRepository;
 import uz.hu.my_project_trello.repository.BoardRepository;
 import uz.hu.my_project_trello.repository.RoleRepository;
 import uz.hu.my_project_trello.repository.WorkspaceRepository;
+import uz.hu.my_project_trello.services.auth.GetSessionUser;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -44,23 +45,19 @@ public class WorkspaceService extends AbsProjectService<WorkspaceResDTO, Workspa
     private final RoleRepository roleRepository;
     private final BoardMapper boardMapper;
     private final BoardRepository boardRepository;
-    public  Long getSessionId(){
-        String name = SecurityContextHolder.getContext().getAuthentication().getName();
-        AuthUser authUser = authUserRepository.findByUsername(name).orElseThrow(() -> new GenericNotFoundException("not Authorization", 403));
-        return authUser.getId();
-    }
+    private final GetSessionUser session;
     @Override
     public WorkspaceResDTO generate(WorkspaceCreateDTO workspaceCreateDTO) {
         workspaceCreateDTO.setWorkspaceType(workspaceCreateDTO.getWorkspaceType().toUpperCase());
         Workspace workspace = workspaceMapper.fromDTO(workspaceCreateDTO);
-        workspace.setCreatedBy(getSessionId());
+        workspace.setCreatedBy(session.getUser().getId());
         if (Objects.nonNull(workspaceCreateDTO.getUserList())){
             ArrayList<AuthUser> list = new ArrayList<>();
             workspaceCreateDTO.getUserList().forEach(id -> {
             AuthUser authUser = authUserRepository.findById(id).orElseThrow(() -> new GenericNotFoundException("not Found", 404));
             list.add(authUser);
              } );
-            AuthUser authUser = authUserRepository.findById(getSessionId()).orElseThrow(() -> new GenericNotFoundException("not Found", 404));
+            AuthUser authUser = authUserRepository.findById(session.getUser().getId()).orElseThrow(() -> new GenericNotFoundException("not Found", 404));
             list.add(authUser);
             workspace.setUser(list);
         }
@@ -71,13 +68,13 @@ public class WorkspaceService extends AbsProjectService<WorkspaceResDTO, Workspa
         Workspace found = workspaceRepository.findById(workspaceUpdateDTO.getId()).orElseThrow(() -> new GenericNotFoundException("Workspace not found", 404));
         Workspace workspace = workspaceMapper.fromUDTO(workspaceUpdateDTO, found);
         workspace.setUpdatedAt(LocalDateTime.now());
-        workspace.setUpdatedBy(getSessionId());
+        workspace.setUpdatedBy(session.getUser().getId());
         Workspace workspace1 = workspaceRepository.save(workspace);
         return workspaceMapper.toDTO(workspace1);
     }
     @Override
     public WorkspaceResDTO getOne(Long id) {
-        Workspace workspace = workspaceRepository.findOne(getSessionId(), id);
+        Workspace workspace = workspaceRepository.findOne(session.getUser().getId(), id);
         if (Objects.nonNull(workspace)){
             return workspaceMapper.toDTO(workspace);
         }
@@ -86,7 +83,7 @@ public class WorkspaceService extends AbsProjectService<WorkspaceResDTO, Workspa
 
     @Override
     public List<WorkspaceResDTO> getAll(Long id) {
-        List<Workspace> workspaceList = workspaceRepository.findAllBYID(getSessionId());
+        List<Workspace> workspaceList = workspaceRepository.findAllBYID(session.getUser().getId());
         List<WorkspaceResDTO> list = new ArrayList<>();
         for (Workspace workspace : workspaceList) {
             WorkspaceResDTO workspaceResDTO = workspaceMapper.toDTO(workspace);
@@ -96,9 +93,9 @@ public class WorkspaceService extends AbsProjectService<WorkspaceResDTO, Workspa
     }
     public List<WorkspaceResForBoardMember> getByBoardMemberId(){
         List<WorkspaceResForBoardMember> memberList = new ArrayList<>();
-        List<Workspace> workspaceList = workspaceRepository.getAllForBoardUser(getSessionId());
+        List<Workspace> workspaceList = workspaceRepository.getAllForBoardUser(session.getUser().getId());
         workspaceList.forEach(workspace -> {
-            for (Board board : boardRepository.getByBoardUserId(workspace.getId(), getSessionId())) {
+            for (Board board : boardRepository.getByBoardUserId(workspace.getId(), session.getUser().getId())) {
                 BoardResDTO boardResDTO = boardMapper.toDTOFrom(board);
                 boardResDTO.setColumnList(board.getColumns().stream().map(AbsDomain::getId).toList());
                 boardResDTO.setMemberList(board.getUser().stream().map(AuthUser::getId).toList());
@@ -112,20 +109,20 @@ public class WorkspaceService extends AbsProjectService<WorkspaceResDTO, Workspa
     }
     @Override
     public void softDelete(Long id) {
-        if (!workspaceRepository.softDeleted(id,getSessionId())){
+        if (!workspaceRepository.softDeleted(id,session.getUser().getId())){
             throw  new GenericNotFoundException("User can't authorize",403);
         }
     }
     @Override
     public void hardDelete(Long id) {
-      if (!workspaceRepository.hardDeleted(id, getSessionId())){
+      if (!workspaceRepository.hardDeleted(id, session.getUser().getId())){
           throw  new GenericNotFoundException("User can't authorize",403);
       }
     }
     public void addUser(AddMemberDTO addMemberDTO) {
         List<AuthUser> users = new ArrayList<>();
         Workspace found = workspaceRepository.findById(addMemberDTO.getSpaceId()).orElseThrow(() -> new GenericNotFoundException("Not found", 404));
-        if (!found.getCreatedBy().equals(getSessionId())){
+        if (!found.getCreatedBy().equals(session.getUser().getId())){
             throw new GenericNotFoundException("you aren't owner this workspace",403);
         }
         addMemberDTO.getUserList().forEach(id -> {

@@ -16,12 +16,12 @@ import javax.persistence.*;
 @Getter
 @Setter
 @Builder
-public class Commit extends AbsDomain {
+public class Comment extends AbsDomain {
 
     @Column(nullable = false)
     private String text;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private AuthUser authUser;
 
     @ManyToOne(fetch = FetchType.LAZY)

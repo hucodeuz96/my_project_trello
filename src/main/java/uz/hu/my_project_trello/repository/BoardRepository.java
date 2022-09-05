@@ -26,7 +26,7 @@ public interface BoardRepository extends JpaRepository<Board,Long> {
     @Query("delete from Board b where b.id=:id and b.createdBy=:ownerId")
     void hardDeleteBoardId(Long ownerId, Long id);
 
-    @Query("select w.boards from Workspace w inner join w.user u  where w.id=:wId and w.isDeleted=false and u.id=:id")
+    @Query("select b from Board b inner join b.user u  where b.workspace.id=:wId and b.isDeleted=false and u.id=:id")
     List<Board> getAllByWorkspaceId(Long id,Long wId);
 
     @Query(value = "select b from Board b inner join b.user u where b.id=:id and b.isDeleted=false and  u.id=:userId")
@@ -34,5 +34,6 @@ public interface BoardRepository extends JpaRepository<Board,Long> {
 
     @Query(value = "select b from Board b inner join b.workspace w inner join b.user u where w.id=:wId and u.id=:uId")
     List<Board> getByBoardUserId(Long wId,Long uId);
+
 
 }

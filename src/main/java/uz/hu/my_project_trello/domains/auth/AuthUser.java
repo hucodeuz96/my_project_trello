@@ -1,10 +1,12 @@
 package uz.hu.my_project_trello.domains.auth;
 
 import lombok.*;
+import uz.hu.my_project_trello.domains.project.Comment;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 
 
 @Entity
@@ -50,7 +52,8 @@ public class AuthUser {
     public enum Status {
         ACTIVE, NOT_ACTIVE, BLOCKED;
     }
-
+    @OneToMany(mappedBy = "authUser")
+    List<Comment> commentList;
 
     public boolean isActive() {
         return Status.ACTIVE.equals(this.status);

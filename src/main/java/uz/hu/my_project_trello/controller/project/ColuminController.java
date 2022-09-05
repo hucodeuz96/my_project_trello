@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import uz.hu.my_project_trello.dtos.project.columin.ColuminCreateDTO;
 import uz.hu.my_project_trello.dtos.project.columin.ColuminResDTO;
 import uz.hu.my_project_trello.dtos.project.columin.ColuminUpdateDTO;
+import uz.hu.my_project_trello.dtos.project.columin.ColumnMoveDTO;
 import uz.hu.my_project_trello.response.ApiResponse;
 import uz.hu.my_project_trello.services.project.ColuminService;
 
@@ -50,6 +51,12 @@ public class ColuminController {
     public ResponseEntity<Boolean> hardDeleted(Long id){
         columinService.hardDelete(id);
         return ResponseEntity.ok(true);
+    }
+
+    @PostMapping("/moveColumn")
+    public ResponseEntity<?> moveColumn(@RequestBody ColumnMoveDTO columnMoveDTO){
+        columinService.moveColumnById(columnMoveDTO);
+        return ResponseEntity.ok().body(true);
     }
 
 

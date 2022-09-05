@@ -24,6 +24,5 @@ public class Columin extends AbsDomain {
     private List<Card> card;
     @ManyToOne
     private Board board;
-
-
+    private Long orderNumber;
 }

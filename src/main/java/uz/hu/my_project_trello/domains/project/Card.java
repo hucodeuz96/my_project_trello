@@ -4,6 +4,7 @@ import lombok.*;
 import uz.hu.my_project_trello.domains.auth.AuthUser;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -23,12 +24,14 @@ public class Card extends AbsDomain {
     private String description;
 
     @OneToMany(mappedBy = "card")
-    private List<Commit> commit;
+    private List<Comment> comment;
 
     @ManyToOne
     private Columin columin;
 
     @ManyToMany
     private List<AuthUser> user;
+    private LocalDateTime deadline;
+    private Long orderNumber;
 
 }

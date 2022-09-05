@@ -15,7 +15,7 @@ import java.util.Optional;
  */
 public interface CardRepository extends JpaRepository<Card,Long> {
 
-    @Query("select c from Card c inner join c.user u where c.isDeleted=false and c.id=:id and u.id=:uId")
+    @Query("select c from Card c inner join c.user u inner join c.columin col inner join col.board b inner join b.user bUser  where c.isDeleted=false and c.id=:id and(u.id=:uId or bUser.id=:uId)")
     Optional<Card> getOneByID(Long id,Long uId);
 
     @Query("select c from Card c inner join c.columin col where c.isDeleted = false and col.id=:id")

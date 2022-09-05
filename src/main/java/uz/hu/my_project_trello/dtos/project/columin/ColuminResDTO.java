@@ -25,4 +25,5 @@ public class ColuminResDTO {
     private Long createdBy;
     private Long updatedBy;
     private boolean isDeleted;
+    private Long orderNumber;
 }

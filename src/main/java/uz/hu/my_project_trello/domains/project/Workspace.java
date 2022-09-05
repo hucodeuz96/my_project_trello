@@ -47,6 +47,7 @@ public class Workspace extends AbsDomain {
 
     @ManyToMany
     private List<AuthUser> user;
+
     @OneToMany(mappedBy = "workspace",cascade = CascadeType.REMOVE)
     private List<Board> boards;
 }

@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uz.hu.my_project_trello.dtos.project.AddMemberDTO;
 import uz.hu.my_project_trello.dtos.project.card.CardCreateDTO;
+import uz.hu.my_project_trello.dtos.project.card.CardMoveDTO;
 import uz.hu.my_project_trello.dtos.project.card.CardResDTO;
 import uz.hu.my_project_trello.dtos.project.card.CardUpdateDTO;
 import uz.hu.my_project_trello.response.ApiResponse;
@@ -63,6 +64,13 @@ public class CardController {
     public ResponseEntity<?> getCardMember(@RequestParam Long cardId){
         return ResponseEntity.status(Objects.nonNull(cardService.getUserBYCardId(cardId))?200:409).body(cardService.getUserBYCardId(cardId));
     }
+    @PostMapping("/moveCard")
+    public ResponseEntity<?> moveCard(@RequestBody CardMoveDTO cartMoveDTO){
+        cardService.moveCardTo(cartMoveDTO);
+        return ResponseEntity.ok(true);
+
+    }
+
 
 
 

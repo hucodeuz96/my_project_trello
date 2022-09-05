@@ -1,10 +1,8 @@
-package uz.hu.my_project_trello.dtos.project.commit;
+package uz.hu.my_project_trello.dtos.project.comment;
 
 import lombok.*;
-import uz.hu.my_project_trello.domains.project.Commit;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 
 /**
  * @author "Husniddin Ulachov"
@@ -17,7 +15,7 @@ import java.util.HashMap;
 @Getter
 @Setter
 @ToString
-public class CommitResDTO {
+public class CommentResDTO {
     private String text;
     private Long userId;
     private Long cardId;
